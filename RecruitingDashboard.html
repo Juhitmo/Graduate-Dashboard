@@ -1,0 +1,377 @@
+<html>
+<title>Recruiting Dashboard</title>
+<script src="https://www.promisejs.org/polyfills/promise-6.1.0.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<link href="https://fonts.googleapis.com/css?family=Ubuntu:700" rel="stylesheet">
+
+<style>
+    /*CSS for the loading animations*/
+    .loader {
+        border: 16px solid #f3f3f3; /* grey */
+        border-top: 16px solid #336699; /* Blue */
+        border-radius: 50%;
+        width: 120px;
+        height: 120px;
+        animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+<script type="text/javascript">
+    //begin Javascript
+    //initializing variables
+    var dataURL = "https://data.colorado.gov/resource/xzyd-7r5s.json?$limit=50000";
+    var instArray = new Array();
+    var instUnique = new Array();
+    var ageArray = new Array();
+    var ageUnique = new Array();
+    var maleCount = 0;
+    var femCount = 0;
+    var ethnArray = new Array();
+    var ethnUnique = new Array();
+    var studArray = new Array();
+    var studUnique = new Array();
+    var degArray = new Array();
+    var degreeUnique = new Array();
+    var progArray = new Array();
+    var progUnique = new Array();
+    var tempCount = 0;
+    var first = false;
+    
+    //load google charts, call main data function on load
+    google.charts.load('current', {packages: ['corechart']});
+    google.charts.setOnLoadCallback(getData);
+    
+    //unique array function
+    Array.prototype.unique = function () {
+        var arr = this;
+        return $.grep(arr, function (v, i) {
+            return $.inArray(v, arr) === i;
+        });
+    }
+    //called on initial page load to pull ALL data, then called again for subsequent degree information on updates
+    function getData()
+    {
+        //reset array values for when calling function after initial load
+         instArray = [];
+         instUnique = [];
+         ageArray = [];
+         ageUnique = [];
+         maleCount = 0;
+         femCount = 0;
+         ethnArray = [];
+         ethnUnique = [];
+         studArray = [];
+         studUnique = [];
+         degArray = [];
+         degreeUnique = [];
+         progArray = [];
+         progUnique = [];
+         
+         //jquery ajax call to get data from URL, returns arrays of values in JSON format
+        $.ajax({
+            url: dataURL,
+            method: "GET",
+            dataType: "json",
+            success: function( data, status, jqxhr ){
+                //split values into arrays
+                for(var i = 0; i < data.length; i++)
+                {
+                    instArray.push(data[i].institutionname);
+                    ageArray.push(data[i].agedesc);
+                    if(data[i].gender == 'Male'){
+                        maleCount++;
+                    }else{
+                        femCount++;
+                    }
+                    ethnArray.push(data[i].ethnicity);
+                    studArray.push(data[i].studentlevel);
+                    degArray.push(data[i].degreelevel);
+                    progArray.push(data[i].programname);
+                }
+                //get unique arrays
+                instUnique = instArray.unique();
+                ageUnique = ['Under 17', '17-20', '21-24', '25-40', 'Over 40'];//ageArray.unique();
+                ethnUnique = ethnArray.unique();
+                studUnique = studArray.unique();
+                degUnique = degArray.unique();
+                progUnique = progArray.unique();
+                //console.log("success!");
+                
+            },
+            error: function( jqxhr, status, error ){
+                alert( "Something went wrong!");
+            },
+            complete: function(){
+                //create degree list dropdown
+                if(first == false){
+                    progUnique.sort();
+                    var degList = "<option value='All'>All</option>";
+                    for(var i = 0; i < progUnique.length; i++)
+                    {
+                        degList += "<option value='"+progUnique[i]+"'>"+progUnique[i]+"</option>";
+                    }
+                    document.getElementById("degreeList").innerHTML = degList;
+                    first = true;
+                }
+                
+                //create google graphs
+                drawDashboard();
+            }
+        });
+    }
+    //catch-all function for calling graphs, and building page data.
+    function drawDashboard()
+    {
+        drawInst();
+        drawGen();
+        drawEthn();
+        drawAge();
+        drawDeg();
+        document.getElementById("totalDeg").innerHTML = "Total Degrees Awarded in 2014: "+instArray.length;
+        $("#loading").hide();
+    }
+    //drawing institutions fraph
+    function drawInst()
+    {
+        //set columns
+        var instData = new google.visualization.DataTable();
+        instData.addColumn('string', 'Institution');
+        instData.addColumn('number', 'Graduates');
+        instData.addColumn({type: 'number', role: 'annotation'});
+        
+        //create rows
+        for(var x=0; x < instUnique.length; x++)
+        {
+            tempCount = 0;
+            for(var y=0; y < instArray.length; y++)
+            {
+                if(instArray[y] == instUnique[x])
+                {
+                    tempCount++;
+                }
+            }
+            instData.addRow([instUnique[x], tempCount, tempCount]);
+        }
+        //chart options/settings
+        var instOptions = {
+            title: 'Degrees Earned by Institutions ',
+            legend: {position: 'none'},
+            colors: ['#336699'],
+            animation:{
+                duration: 1000,
+                
+            },
+            width: 1200,
+            height: 450,
+            chartArea: {bottom:200, height: 200},
+            hAxis: {
+                showTextEvery: 1,
+                slantedText: true,
+                //slantedTextAngle: 60
+            }
+        };
+        //draw chart
+        var chart = new google.visualization.ColumnChart(
+            document.getElementById('institutions'));
+
+        chart.draw(instData, instOptions);
+    }
+    function drawGen()
+    {
+        //set colums and row data
+         var genData = google.visualization.arrayToDataTable([
+          ['Gender', 'Graduates'],
+          ['Male', maleCount],
+          ['Female', femCount]
+         ]);
+        
+        //chart options
+        var genOptions = {
+            title: 'Degrees Earned by Gender ',
+            colors: ['#999999','#336699'],
+            legend: {position: 'none'},//labeled currently broken - google
+            pieSliceText: 'label',
+            animation:{
+                duration: 1000,
+                
+            },
+            width: 500,
+            height: 500,
+        };
+        
+        //draw chart
+        var chart = new google.visualization.PieChart(document.getElementById('gender'));
+
+        chart.draw(genData, genOptions);
+    }
+    function drawEthn()
+    {
+        var ethnData = new google.visualization.DataTable();
+        ethnData.addColumn('string', 'Ethnicity');
+        ethnData.addColumn('number', 'Degrees Awarded');
+        ethnData.addColumn({type: 'number', role: 'annotation'});
+        
+        for(var x=0; x < ethnUnique.length; x++)
+        {
+            tempCount = 0;
+            for(var y=0; y < ethnArray.length; y++)
+            {
+                if(ethnArray[y] == ethnUnique[x])
+                {
+                    tempCount++;
+                }
+            }
+            ethnData.addRow([ethnUnique[x], tempCount, tempCount]);
+        }
+        
+        var ethnOptions = {
+            title: 'Degrees Earned by Ethnicity ',
+            legend: {position: 'none'},
+            colors: ['#336699'],
+            animation:{
+                duration: 1000,
+                
+            },
+            width: 500,
+            height: 500,
+            
+        };
+        
+        var chart = new google.visualization.BarChart(
+            document.getElementById('ethnicity'));
+
+        chart.draw(ethnData, ethnOptions);
+    }
+    function drawAge()
+    {
+        //set columns
+        var ageData = new google.visualization.DataTable();
+        ageData.addColumn('string', 'age');
+        ageData.addColumn('number', 'Degrees Awarded');
+        ageData.addColumn({type: 'number', role: 'annotation'});
+        
+        //create rows
+        for(var x=0; x < ageUnique.length; x++)
+        {
+            tempCount = 0;
+            for(var y=0; y < ageArray.length; y++)
+            {
+                if(ageArray[y] == ageUnique[x])
+                {
+                    tempCount++;
+                }
+            }
+            ageData.addRow([ageUnique[x], tempCount, tempCount]);
+        }
+        
+        //chart options/settings
+        var ageOptions = {
+            title: 'Degrees Earned by Age ',
+            legend: {position: 'none'},
+            colors: ['#336699'],
+            animation:{
+                duration: 1000,
+                
+            },
+            width: 500,
+            height: 500,
+            
+        };
+        
+        //draw chart
+        var chart = new google.visualization.ColumnChart(
+            document.getElementById('age'));
+
+        chart.draw(ageData, ageOptions);
+    }
+    function drawDeg()
+    {
+        //set columns
+        var degData = new google.visualization.DataTable();
+        degData.addColumn('string', 'Degree Type');
+        degData.addColumn('number', 'Graduates');
+        
+        //create rows
+        for(var x=0; x < degUnique.length; x++)
+        {
+            tempCount = 0;
+            for(var y=0; y < degArray.length; y++)
+            {
+                if(degArray[y] == degUnique[x])
+                {
+                    tempCount++;
+                }
+            }
+            degData.addRow([degUnique[x], tempCount]);
+        } 
+        
+        //chart options/settings
+        var degOptions = {
+            title: 'Degrees Earned by Type',
+            colors: ['#999999','#336699', '#A64E48','#155931','#138C89','#614973'],
+            legend: {position: 'none'},//labeled currently broken - google
+            pieSliceText: 'label',
+            animation:{
+                duration: 1000,
+                
+            },
+            width: 500,
+            height: 500,
+        };
+        
+        //draw chart
+        var chart = new google.visualization.PieChart(document.getElementById('degree'));
+
+        chart.draw(degData, degOptions);
+    }
+    function updatePage()
+    {
+        //if dropdown selected specific degree, change URL to query for specific degree. If all was selected, return all degrees
+        if(document.getElementById("degreeList").value != 'All'){
+            dataURL = "https://data.colorado.gov/resource/xzyd-7r5s.json?$limit=50000&programname="+document.getElementById("degreeList").value;
+        } else {
+            dataURL = "https://data.colorado.gov/resource/xzyd-7r5s.json?$limit=50000";
+        }
+        $("#loading").show();
+        //recall data function
+        getData();
+    } 
+ </script>
+<head>
+    <h1 align="center" style="font-family: 'Ubuntu', sans-serif; font-size: 2.5em;">Colorado College Recruiting Dashboard</h1>
+ </head>
+ <body style="width=100%;">
+     <!--loading div-->
+     <div id='loading' style="width:100%;">
+         <div class='loader' style="margin: 0 auto;">
+         </div>
+     </div>
+     <!--charts container-->
+     <div id='graphs' style='width: 1200px; margin: 25px auto; text-align: center;'>
+         <!--Dropdown div-->
+        <div style='display: block;'>
+            <label for='degreeList'><b>Degree Name:</b><select id='degreeList' onchange='updatePage();'>
+            </select></label>
+        </div>
+        <!--Total Degrees header-->
+        <h2 id='totalDeg' align="center" style="font-family: 'Ubuntu', sans-serif; font-size: 1.5em; display: block;"></h2>
+        <!--chart divs-->
+        <div id='institutions'>
+        </div>
+        <div id='degree' style='display: inline-block;'>
+        </div>
+        <div id='age' style='display: inline-block;'>
+        </div>
+        <div id='gender' style='display: inline-block;'>
+        </div>
+        <div id='ethnicity' style='display: inline-block;'>
+        </div>
+     </div>
+ </body>
+ <footer>
+ </footer>
