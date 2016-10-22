@@ -133,6 +133,8 @@
         drawAge();
         drawDeg();
         document.getElementById("totalDeg").innerHTML = "Total Degrees Awarded in 2014: "+instArray.length;
+        $("#degreeName").toggle();
+        $("#totalDeg").toggle();
         $("#loading").hide();
     }
     //drawing institutions fraph
@@ -337,6 +339,13 @@
         } else {
             dataURL = "https://data.colorado.gov/resource/xzyd-7r5s.json?$limit=50000";
         }
+        document.getElementById('institutions').innerHTML = "";
+        document.getElementById('degree').innerHTML = "";
+        document.getElementById('age').innerHTML = "";
+        document.getElementById('gender').innerHTML = "";
+        document.getElementById('ethnicity').innerHTML = "";
+        $("#degreeName").toggle();
+        $("#totalDeg").toggle();
         $("#loading").show();
         //recall data function
         getData();
@@ -354,12 +363,12 @@
      <!--charts container-->
      <div id='graphs' style='width: 1200px; margin: 25px auto; text-align: center;'>
          <!--Dropdown div-->
-        <div style='display: block;'>
-            <label for='degreeList'><b>Degree Name:</b><select id='degreeList' onchange='updatePage();'>
+        <div id='degreeName' style='display: none;'>
+            <label for='degreeList'><b>Degree Name:&nbsp;&nbsp;</b><select id='degreeList' onchange='updatePage();'>
             </select></label>
         </div>
         <!--Total Degrees header-->
-        <h2 id='totalDeg' align="center" style="font-family: 'Ubuntu', sans-serif; font-size: 1.5em; display: block;"></h2>
+        <h2 id='totalDeg' align="center" style="font-family: 'Ubuntu', sans-serif; font-size: 1.5em; display: none;"></h2>
         <!--chart divs-->
         <div id='institutions'>
         </div>
