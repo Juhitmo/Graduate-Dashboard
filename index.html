@@ -49,6 +49,9 @@
         font-size: 1.5em; 
         display: none;
     }
+    #totalNum{
+        color: #336699;
+    }
     #institutions{
         width: 1200px;
         margin: 25px auto;
@@ -169,7 +172,7 @@
         drawEthn();
         drawAge();
         drawDeg();
-        document.getElementById("totalDeg").innerHTML = "Total Degrees Awarded in 2014: "+instArray.length;
+        document.getElementById("totalDeg").innerHTML = "Total Degrees Awarded in 2014: <span id='totalNum'>"+instArray.length+"</span>";
         $("#degreeName").toggle();
         $("#totalDeg").toggle();
         $("#loading").hide();
