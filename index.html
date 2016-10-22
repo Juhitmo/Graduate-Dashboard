@@ -7,7 +7,11 @@
 
 <style>
     /*CSS for the loading animations*/
+    html{
+        min-width: 1200px;
+    }
     .loader {
+        margin: 0 auto;
         border: 16px solid #f3f3f3; /* grey */
         border-top: 16px solid #336699; /* Blue */
         border-radius: 50%;
@@ -19,6 +23,39 @@
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
+    }
+    h1{
+        font-family: 'Ubuntu', sans-serif;
+        font-size: 2.5em;
+        text-align: center;
+    }
+    body{
+        width: 100%;
+    }
+    #loading{
+        width:100%;
+    }
+    #graphs{
+        width: 100%;
+        margin: 25px auto; 
+        text-align: center;
+    }
+    #degreeName{
+        display: none;
+    }
+    #totalDeg{
+        margin: 2% auto;
+        font-family: 'Ubuntu', sans-serif; 
+        font-size: 1.5em; 
+        display: none;
+    }
+    #institutions{
+        width: 1200px;
+        margin: 25px auto;
+        text-align: center;
+    }
+    #degree, #age, #gender, #ethnicity{
+        display: inline-block;
     }
 </style>
 <script type="text/javascript">
@@ -160,6 +197,7 @@
             instData.addRow([instUnique[x], tempCount, tempCount]);
         }
         //chart options/settings
+        var screenWidth = screen.width;
         var instOptions = {
             title: 'Degrees Earned by Institutions ',
             legend: {position: 'none'},
@@ -169,6 +207,7 @@
                 
             },
             width: 1200,
+            //width: screenWidth,
             height: 450,
             chartArea: {bottom:200, height: 200},
             hAxis: {
@@ -177,6 +216,8 @@
                 //slantedTextAngle: 60
             }
         };
+        //sort by highest to lowest
+        instData.sort({column: 1, desc: true});
         //draw chart
         var chart = new google.visualization.ColumnChart(
             document.getElementById('institutions'));
@@ -352,33 +393,33 @@
     } 
  </script>
 <head>
-    <h1 align="center" style="font-family: 'Ubuntu', sans-serif; font-size: 2.5em;">Colorado College Recruiting Dashboard</h1>
+    <h1>Colorado College Recruiting Dashboard</h1>
  </head>
- <body style="width=100%;">
+ <body>
      <!--loading div-->
-     <div id='loading' style="width:100%;">
-         <div class='loader' style="margin: 0 auto;">
+     <div id='loading'>
+         <div class='loader'>
          </div>
      </div>
      <!--charts container-->
-     <div id='graphs' style='width: 1200px; margin: 25px auto; text-align: center;'>
+     <div id='graphs'>
          <!--Dropdown div-->
-        <div id='degreeName' style='display: none;'>
+        <div id='degreeName'>
             <label for='degreeList'><b>Degree Name:&nbsp;&nbsp;</b><select id='degreeList' onchange='updatePage();'>
             </select></label>
         </div>
         <!--Total Degrees header-->
-        <h2 id='totalDeg' align="center" style="font-family: 'Ubuntu', sans-serif; font-size: 1.5em; display: none;"></h2>
+        <h2 id='totalDeg'></h2>
         <!--chart divs-->
         <div id='institutions'>
         </div>
-        <div id='degree' style='display: inline-block;'>
+        <div id='degree'>
         </div>
-        <div id='age' style='display: inline-block;'>
+        <div id='age'>
         </div>
-        <div id='gender' style='display: inline-block;'>
+        <div id='gender'>
         </div>
-        <div id='ethnicity' style='display: inline-block;'>
+        <div id='ethnicity'>
         </div>
      </div>
  </body>
