@@ -57,6 +57,13 @@
         margin: 25px auto 0 auto;
         text-align: center;
     }
+    .dashRow
+    {
+        width: 100%;
+        max-width: 1200px;
+        text-align: center;
+        margin: 0 auto;
+    }
     #degree, #age, #gender, #ethnicity{
         display: inline-block;
     }
@@ -422,13 +429,17 @@
         <!--chart divs-->
         <div id='institutions'>
         </div>
-        <div id='degree'>
+        <div class='dashRow'>
+            <div id='degree'>
+            </div>
+            <div id='age'>
+            </div>
         </div>
-        <div id='age'>
-        </div>
-        <div id='gender'>
-        </div>
-        <div id='ethnicity'>
+        <div class='dashRow'>
+            <div id='gender'>
+            </div>
+            <div id='ethnicity'>
+            </div>
         </div>
      </div>
  </body>
