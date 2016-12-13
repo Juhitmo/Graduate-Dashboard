@@ -54,7 +54,7 @@
     }
     #institutions{
         width: 1200px;
-        margin: 25px auto;
+        margin: 25px auto 0 auto;
         text-align: center;
     }
     #degree, #age, #gender, #ethnicity{
@@ -172,7 +172,7 @@
         drawEthn();
         drawAge();
         drawDeg();
-        document.getElementById("totalDeg").innerHTML = "Total Degrees Awarded in 2014: <span id='totalNum'>"+instArray.length+"</span>";
+        document.getElementById("totalDeg").innerHTML = "Total Degrees Awarded in 2014: <span id='totalNum'>"+instArray.length.toLocaleString()+"</span>";
         $("#degreeName").toggle();
         $("#totalDeg").toggle();
         $("#loading").hide();
@@ -184,10 +184,12 @@
         var instData = new google.visualization.DataTable();
         instData.addColumn('string', 'Institution');
         instData.addColumn('number', 'Graduates');
-        instData.addColumn({type: 'number', role: 'annotation'});
+        //instData.addColumn({type: 'number', role: 'annotation'});
         
         //create rows
         for(var x=0; x < instUnique.length; x++)
+        //top 10 institutions only
+        //for(var x=0; x <= 10; x++)
         {
             tempCount = 0;
             for(var y=0; y < instArray.length; y++)
@@ -197,7 +199,8 @@
                     tempCount++;
                 }
             }
-            instData.addRow([instUnique[x], tempCount, tempCount]);
+            //instData.addRow([instUnique[x], tempCount, tempCount]);
+            instData.addRow([instUnique[x], tempCount]);
         }
         //chart options/settings
         var screenWidth = screen.width;
@@ -214,9 +217,10 @@
             height: 450,
             chartArea: {bottom:200, height: 200},
             hAxis: {
+                //textPosition: 'none'
                 showTextEvery: 1,
                 slantedText: true,
-                //slantedTextAngle: 60
+                slantedTextAngle: 45
             }
         };
         //sort by highest to lowest
@@ -396,6 +400,7 @@
         getData();
     } 
 </script>
+<!DOCTYPE = html>
 <head>
     <h1>Colorado College Recruiting Dashboard</h1>
  </head>
