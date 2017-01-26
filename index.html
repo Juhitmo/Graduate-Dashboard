@@ -1,7 +1,9 @@
 <html>
 <title>Recruiting Dashboard</title>
-<script src="https://www.promisejs.org/polyfills/promise-6.1.0.js"></script>
+<!--<script src="https://www.promisejs.org/polyfills/promise-6.1.0.js"></script>-->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Ubuntu:700" rel="stylesheet">
 
@@ -42,6 +44,10 @@
     }
     #degreeName{
         display: none;
+    }
+    #degreeList
+    {
+        width: 300px;
     }
     #totalDeg{
         margin: 2% auto;
@@ -87,7 +93,7 @@
     var progArray = new Array();
     var progUnique = new Array();
     var tempCount = 0;
-    var first = false;
+    var first = true;
     
     //load google charts, call main data function on load
     google.charts.load('current', {packages: ['corechart']});
@@ -128,17 +134,19 @@
                 //split values into arrays
                 for(var i = 0; i < data.length; i++)
                 {
-                    instArray.push(data[i].institutionname);
-                    ageArray.push(data[i].agedesc);
-                    if(data[i].gender == 'Male'){
-                        maleCount++;
-                    }else{
-                        femCount++;
+                    if(data[i].programname !== undefined){
+                        instArray.push(data[i].institutionname);
+                        ageArray.push(data[i].agedesc);
+                        if(data[i].gender == 'Male'){
+                            maleCount++;
+                        }else{
+                            femCount++;
+                        }
+                        ethnArray.push(data[i].ethnicity);
+                        studArray.push(data[i].studentlevel);
+                        degArray.push(data[i].degreelevel);
+                        progArray.push(data[i].programname.slice(0, -1));
                     }
-                    ethnArray.push(data[i].ethnicity);
-                    studArray.push(data[i].studentlevel);
-                    degArray.push(data[i].degreelevel);
-                    progArray.push(data[i].programname);
                 }
                 //get unique arrays
                 instUnique = instArray.unique();
@@ -154,18 +162,17 @@
                 alert( "Something went wrong!");
             },
             complete: function(){
-                //create degree list dropdown
-                if(first == false){
-                    progUnique.sort();
-                    var degList = "<option value='All'>All</option>";
-                    for(var i = 0; i < progUnique.length; i++)
-                    {
-                        degList += "<option value='"+progUnique[i]+"'>"+progUnique[i]+"</option>";
-                    }
-                    document.getElementById("degreeList").innerHTML = degList;
-                    first = true;
+                //create degree search
+                if(first == true){
+                    $("#degreeList").autocomplete({
+                        source: progUnique,
+                        select: function (event, ui) {
+                            document.getElementById("degreeList").value = ui.item.value;
+                            updatePage();
+                        }
+                    });
+                    first = false;
                 }
-                
                 //create google graphs
                 drawDashboard();
             }
@@ -191,7 +198,7 @@
         var instData = new google.visualization.DataTable();
         instData.addColumn('string', 'Institution');
         instData.addColumn('number', 'Graduates');
-        //instData.addColumn({type: 'number', role: 'annotation'});
+        instData.addColumn({type: 'number', role: 'annotation'});
         
         //create rows
         for(var x=0; x < instUnique.length; x++)
@@ -206,13 +213,13 @@
                     tempCount++;
                 }
             }
-            //instData.addRow([instUnique[x], tempCount, tempCount]);
-            instData.addRow([instUnique[x], tempCount]);
+            instData.addRow([instUnique[x], tempCount, tempCount]);
+            //instData.addRow([instUnique[x], tempCount]);
         }
         //chart options/settings
         var screenWidth = screen.width;
         var instOptions = {
-            title: 'Degrees Earned by Institutions ',
+            title: 'Top 10 Institutions by Degrees Earned ',
             legend: {position: 'none'},
             colors: ['#336699'],
             animation:{
@@ -232,11 +239,18 @@
         };
         //sort by highest to lowest
         instData.sort({column: 1, desc: true});
+
+        //show top 10 rows if greater than 10 
+        var view = new google.visualization.DataView(instData);
+        if(instUnique.length > 10){
+            view.setRows([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        }
+
         //draw chart
         var chart = new google.visualization.ColumnChart(
             document.getElementById('institutions'));
 
-        chart.draw(instData, instOptions);
+        chart.draw(view, instOptions);
     }
     function drawGen()
     {
@@ -259,6 +273,7 @@
             },
             width: 500,
             height: 500,
+            pieHole: 0.5
         };
         
         //draw chart
@@ -380,6 +395,7 @@
             },
             width: 500,
             height: 500,
+            pieHole: 0.5
         };
         
         //draw chart
@@ -390,8 +406,8 @@
     function updatePage()
     {
         //if dropdown selected specific degree, change URL to query for specific degree. If all was selected, return all degrees
-        if(document.getElementById("degreeList").value != 'All'){
-            dataURL = "https://data.colorado.gov/resource/xzyd-7r5s.json?$limit=50000&programname="+document.getElementById("degreeList").value;
+        if(document.getElementById("degreeList").value != 'All' && document.getElementById("degreeList").value != ''){
+            dataURL = "https://data.colorado.gov/resource/xzyd-7r5s.json?$limit=50000&programname="+document.getElementById("degreeList").value+".";
         } else {
             dataURL = "https://data.colorado.gov/resource/xzyd-7r5s.json?$limit=50000";
         }
@@ -409,7 +425,7 @@
 </script>
 <!DOCTYPE = html>
 <head>
-    <h1>Colorado College Recruiting Dashboard</h1>
+    <h1>Colorado College Graduate Dashboard</h1>
  </head>
  <body>
      <!--loading div-->
@@ -420,9 +436,14 @@
      <!--charts container-->
      <div id='graphs'>
          <!--Dropdown div-->
-        <div id='degreeName'>
-            <label for='degreeList'><b>Degree Name:&nbsp;&nbsp;</b><select id='degreeList' onchange='updatePage();'>
-            </select></label>
+        <div id='degreeName' class='ui-widget'>
+            <form>
+                <label for='degreeList'>Search for specific degree:
+                    <input id='degreeList'>
+                </label>
+            </form>
+            <!--<label for='degreeList'><b>Degree Name:&nbsp;&nbsp;</b><select id='degreeList' onchange='updatePage();'>
+            </select></label>-->
         </div>
         <!--Total Degrees header-->
         <h2 id='totalDeg'></h2>
