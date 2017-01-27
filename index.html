@@ -198,7 +198,7 @@
         var instData = new google.visualization.DataTable();
         instData.addColumn('string', 'Institution');
         instData.addColumn('number', 'Graduates');
-        instData.addColumn({type: 'number', role: 'annotation'});
+        instData.addColumn({type: 'string', role: 'annotation'});
         
         //create rows
         for(var x=0; x < instUnique.length; x++)
@@ -213,7 +213,7 @@
                     tempCount++;
                 }
             }
-            instData.addRow([instUnique[x], tempCount, tempCount]);
+            instData.addRow([instUnique[x], tempCount, Math.round((tempCount/instArray.length)*100)+"%"]);
             //instData.addRow([instUnique[x], tempCount]);
         }
         //chart options/settings
